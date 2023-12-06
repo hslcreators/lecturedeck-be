@@ -99,7 +99,7 @@ const loginUser = async (
         joinedAt: user.joinedAt,
         userId: user.userId
       },
-      message: 'Successfully created the user.',
+      message: 'Successfully logged in user.',
       token
     })
   } catch (err) {
