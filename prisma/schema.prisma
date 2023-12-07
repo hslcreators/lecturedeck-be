@@ -6,10 +6,10 @@ generator client {
 }
 
 datasource db {
-  provider          = "mysql"
-  url               = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   //shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  relationMode      = "prisma"
+  relationMode = "prisma"
 }
 
 model User {
@@ -26,7 +26,7 @@ model Flashcards {
   flashcard_id String   @id @default(uuid())
   question     String
   answer       String
-  topic        Topic    @relation(fields: [topicId], references: [topicId])
+  topic        Topic    @relation(fields: [topicId], references: [topicId], onDelete: Cascade)
   topicId      String   @unique
   status       Status
   colorCode    String
@@ -38,16 +38,19 @@ model Flashcards {
 model Topic {
   name        String
   description String?
-  topicId     String      @id @default(uuid())
-  Flashcards  Flashcards?
+  topicId     String       @id @default(uuid())
+  Flashcards  Flashcards[]
+  shareCode   String       @unique
+  createdAt   DateTime     @default(now())
+  fileUrl     String?
 }
 
 model Token {
-  token_id  String  @id @default(uuid())
-  userId    String  @unique
-  user   User  @relation(fields: [userId], references: [userId])
-  token  String  @unique
-  expires_at DateTime 
+  token_id   String   @id @default(uuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  token      String   @unique
+  expires_at DateTime
 }
 
 enum Status {
