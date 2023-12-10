@@ -2,5 +2,5 @@
     "watch": ["src"],
     "ext": ".ts,.js",
     "ignore": [],
-    "exec": "tsx"
+    "exec": "ts-node --files --esm"
 }
