@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express'
 import { BadRequestError } from '../errors/httpErrors'
 import { prisma } from '../config/db'
-import genCode from '../utils/genCode'
+import genHash from '../utils/genHash'
 import { v4 as uuidv4 } from 'uuid'
 // import type { Flashcards } from '@prisma/client'
 
@@ -27,12 +27,12 @@ const shareFlashcard = async (
       where: { topicId }
     })
     if (topic == null) {
-      throw new BadRequestError('Invalid Parameter')
+      throw new BadRequestError('Topic not found')
     }
 
     // generate share code if it does not exist
     if (topic.shareCode == null) {
-      const shareCode = genCode()
+      const shareCode = genHash(10)
 
       await prisma.topic.update({
         where: { topicId },
