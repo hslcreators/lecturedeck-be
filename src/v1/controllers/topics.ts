@@ -4,6 +4,7 @@ import { prisma } from '../config/db'
 import genHash from '../utils/genHash'
 import { v4 as uuidv4 } from 'uuid'
 // import type { Flashcards } from '@prisma/client'
+import { z } from 'zod'
 
 /**
  * @method GET
@@ -62,6 +63,15 @@ const copyFlashcard = async (
   try {
     const { topicId } = req.params
     const { shareCode, userId } = req.body
+    const bodyValidator = z.object({
+      shareCode: z.string().trim(),
+      userId: z.string().trim()
+    })
+
+    const isBodyValid = bodyValidator.safeParse({ shareCode, userId })
+    if (!isBodyValid.success) {
+      throw new BadRequestError(isBodyValid.error.format() as unknown as string)
+    }
 
     // throw error if parameter or request body is not provided
     if (topicId == null || shareCode == null || userId == null) {
