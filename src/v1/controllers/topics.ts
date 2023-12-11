@@ -5,7 +5,7 @@ import { prisma } from '../config/db'
 import genHash from '../utils/genHash'
 import { v4 as uuidv4 } from 'uuid'
 // import type { Flashcards } from '@prisma/client'
-import { bodyValidator } from '../../validators/topic'
+import { bodyValidator, copyFlashcardValidator } from '../../validators/topic'
 
 /**
  * @method GET
@@ -65,7 +65,7 @@ const copyFlashcard = async (
     const { topicId } = req.params
     const { shareCode, userId } = req.body
 
-    const isBodyValid = bodyValidator.safeParse({ shareCode, userId })
+    const isBodyValid = copyFlashcardValidator.safeParse({ shareCode, userId })
     if (!isBodyValid.success) {
       throw new BadRequestError(isBodyValid.error.format() as unknown as string)
     }

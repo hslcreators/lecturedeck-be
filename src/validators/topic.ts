@@ -5,4 +5,16 @@ const bodyValidator = z.object({
 })
 type BodyValidator = z.infer<typeof bodyValidator>
 
-export { bodyValidator, type BodyValidator }
+const copyFlashcardValidator = z.object({
+  shareCode: z.string().trim(),
+  userId: z.string().trim()
+})
+
+type CopyFlashcardValidator = z.infer<typeof copyFlashcardValidator>
+
+export {
+  bodyValidator,
+  type BodyValidator,
+  copyFlashcardValidator,
+  type CopyFlashcardValidator
+}
