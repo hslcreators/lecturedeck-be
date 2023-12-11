@@ -1,9 +1,36 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import { flashcardSchema, ratingSchema } from '../../validators/flashcards'
-import { BadRequestError, NotFoundError } from '../errors/httpErrors'
+import { BadRequestError, NotFoundError, UnAuthorizedError } from '../errors/httpErrors'
 import { prisma } from '../config/db'
 import { generateColorCode } from '../utils/generateColorCode'
 
+const validateFlashcardOwner = async (flashcardId: string, userId: string) => {
+    // Find the flashcard
+    const foundFlashcard = await prisma.flashcards.findUnique({
+      where: {
+        flashcard_id: flashcardId,
+      },
+    });
+  
+    if (foundFlashcard === null) {
+      throw new NotFoundError('Flashcard does not exist!');
+    }
+  
+    // Check if the user owns this flashcard
+    const userTopic = await prisma.topic.findUnique({
+      where: {
+        topicId: foundFlashcard.topicId,
+        userId: userId,
+      },
+    });
+  
+    if (userTopic === null) {
+      throw new UnAuthorizedError('User does not own this flashcard!');
+    }
+  
+    // Return the found flashcard 
+    return foundFlashcard;
+  };
 /**
  * @method POST
  * @param req
@@ -72,11 +99,14 @@ const deleteFlashcard = async (
   next: NextFunction
 ) => {
   try {
+    const {user} = req as Request & UserPayload
     const { flashcardId } = req.params
     // might be a redundant check
     if (flashcardId === undefined || typeof flashcardId !== 'string') {
       throw new BadRequestError('flashcardId is missing')
     }
+    // validate flashcard owner
+    await validateFlashcardOwner(flashcardId, user.userId);
     // delete the requested flashcard
     const deletedFlashcard = await prisma.flashcards.delete({
       where: {
@@ -108,6 +138,8 @@ const updateFlashcardRating = async (
   next: NextFunction
 ) => {
   try {
+    // get logged in user
+    const {user} = req as Request & UserPayload;
     // get flashcard id
     const { flashcardId } = req.params
     // read the body
@@ -122,6 +154,8 @@ const updateFlashcardRating = async (
         validatedRating.error.format() as unknown as string
       )
     }
+    // validate flashcard owner
+     await validateFlashcardOwner(flashcardId, user.userId);
     // update the rating
     const updatedFlashcard = await prisma.flashcards.update({
       where: {
@@ -153,8 +187,12 @@ const updateFlashcard = async (
   next: NextFunction
 ) => {
   try {
+    // get logged in user
+    const {user} = req as Request & UserPayload;
     // read req parameter
     const { flashcardId } = req.params
+    // validate flashcard owner
+    await validateFlashcardOwner(flashcardId, user.userId);
     // find a unique flashcard
     const flashcard = await prisma.flashcards.findUnique({
       where: {
