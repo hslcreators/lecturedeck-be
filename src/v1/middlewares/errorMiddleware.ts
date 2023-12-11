@@ -11,26 +11,26 @@ export const errorHandler = (
   res: Response,
   _next:NextFunction
 ): Response<any, Record<string, any>> | undefined  => {
-    if (err instanceof HttpError) {
-      return res.status(err.statusCode).json({
-        message: err.message,
-        statusCode: err.statusCode,
-        success: false
-      })
-    }
+  if (err instanceof HttpError) {
+    return res.status(err.statusCode).json({
+      message: err.message,
+      statusCode: err.statusCode,
+      success: false
+    })
+  }
     console.log("this is err",err)
-    if (err instanceof Error) {
-      let message = ''
-      // console.error(err.message)
-      if (err instanceof PrismaClientValidationError) {
-        message += 'Could not store data in the database'
-      } else if (err instanceof PrismaClientInitializationError) {
-        message += 'Could not access database'
-      }
-      return res.status(500).json({
-        message,
-        statusCode: 500
-      })
+  if (err instanceof Error) {
+    let message = ''
+    // console.error(err.message)
+    if (err instanceof PrismaClientValidationError) {
+      message += 'Could not store data in the database'
+    } else if (err instanceof PrismaClientInitializationError) {
+      message += 'Could not access database'
     }
+    return res.status(500).json({
+      message,
+      statusCode: 500
+    })
+  } 
   
 }
