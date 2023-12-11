@@ -12,7 +12,7 @@ const auth = async (
 ): Promise<void> => {
   try {
     const headers = (req.headers as AuthHeaders)['x-auth-token']
-    //The token is received like this  "Bearer Token" where the Token is the actual JsonWebToken.
+    // The token is received like this  "Bearer Token" where the Token is the actual JsonWebToken.
     const token = headers?.split(' ')[1]
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (!token) {
