@@ -128,7 +128,8 @@ const updateFlashcardRating = async (
         flashcard_id: flashcardId
       },
       data: {
-        rating
+        rating,
+        updatedAt: new Date()
       }
     })
     res.status(200).json({
