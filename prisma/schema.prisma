@@ -29,7 +29,6 @@ model Flashcards {
   answer       String
   topic        Topic    @relation(fields: [topicId], references: [topicId], onDelete: Cascade)
   topicId      String
-  status       Status
   colorCode    String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -72,11 +71,7 @@ model CopyLogger {
   @@index([userId])
 }
 
-enum Status {
-  FULLY_UNDERSTOOD
-  WORKING
-  NOT_SEEN
-}
+
 
 enum Rating {
   VERY_BAD
