@@ -3,7 +3,7 @@ import request from 'supertest'
 // for the token that is here replace with your own created user.
 // i could i have used a beforeEach and then logged in but this is much simpler.
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMDUzNzAwOC05OGI0LTQxNzctYTQyNy03ZGVkZjg5YmIxOGEiLCJpYXQiOjE3MDI1NDI4NjgsImV4cCI6MTcwMjk3NDg2OH0.3oYF0sFBAUu1-X4ekKfJEqGb3aCU_nqMcy7xHgEBBQ4'
-/* describe('Testing POST/api/v1/flashcards/manual-create', () => {
+describe('Testing POST/api/v1/flashcards/manual-create', () => {
   // it should return status  201 and send flashcard data with correct color code.
   it('should return status 201 and send flashcard data with correct color code', async () => {
     const response = await request(app)
@@ -61,8 +61,8 @@ const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMDUzNzAwOC05
       .expect(404)
   })
 })
- */
- /* describe('Testing DELETE/api/v1/flashcards/:flashcardId', () => {
+
+ describe('Testing DELETE/api/v1/flashcards/:flashcardId', () => {
   // it should return status 202 and return the flashcardId.
   it('should return status 202 and return the flashcardId', async () => {
     const validFlashcardId = '444417f8-7e76-4f0e-ace9-74407665732f'
@@ -92,9 +92,9 @@ const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMDUzNzAwOC05
       .expect(404)
   })
 
-}) */
+})
 
-/* describe('Testing PATCH/api/v1/flashcards/:flashcardId', () => {
+ describe('Testing PATCH/api/v1/flashcards/:flashcardId', () => {
   const flashcardId = 'a48310b2-628b-4198-964e-d11d47006b55'
   // it should return status 200  with the old data if i don't pass anything in the body.
   it("it should return status 200  with the old data if i don't pass anything in the body.", async () => {
@@ -131,8 +131,8 @@ const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMDUzNzAwOC05
       })
       .expect(200)
   })
-}) */
-
+}) 
+ 
 describe('Testing PATCH/api/v1/flashcards/:flashcardId/rating', () => {
   const flashcardId = 'a48310b2-628b-4198-964e-d11d47006b55'
   // it should return status 200 when i pass in the right rating.
