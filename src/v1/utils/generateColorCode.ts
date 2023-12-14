@@ -14,7 +14,7 @@ const colorCodeArr: ReadonlyArray<HexCode> = [
   '#DA9F93',
   '#B6465F',
   '#890620',
-  '#8A4FF'
+  '#8A4FFF'
 ];
 const generateColorCode = (): HexCode => {
   return colorCodeArr[Math.floor(Math.random() * colorCodeArr.length)]

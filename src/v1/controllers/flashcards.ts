@@ -1,36 +1,42 @@
 import { type NextFunction, type Request, type Response } from 'express'
 import { flashcardSchema, ratingSchema } from '../../validators/flashcards'
-import { BadRequestError, NotFoundError, UnAuthorizedError } from '../errors/httpErrors'
+import {
+  BadRequestError,
+  NotFoundError,
+  UnAuthorizedError
+} from '../errors/httpErrors'
 import { prisma } from '../config/db'
 import { generateColorCode } from '../utils/generateColorCode'
+import { Rating } from '@prisma/client'
+import { isStringWithLength } from '../utils/isStringWithLength'
 
 const validateFlashcardOwner = async (flashcardId: string, userId: string) => {
-    // Find the flashcard
-    const foundFlashcard = await prisma.flashcards.findUnique({
-      where: {
-        flashcard_id: flashcardId,
-      },
-    });
-  
-    if (foundFlashcard === null) {
-      throw new NotFoundError('Flashcard does not exist!');
+  // Find the flashcard
+  const foundFlashcard = await prisma.flashcards.findUnique({
+    where: {
+      flashcard_id: flashcardId
     }
-  
-    // Check if the user owns this flashcard
-    const userTopic = await prisma.topic.findUnique({
-      where: {
-        topicId: foundFlashcard.topicId,
-        userId: userId,
-      },
-    });
-  
-    if (userTopic === null) {
-      throw new UnAuthorizedError('User does not own this flashcard!');
+  })
+
+  if (foundFlashcard === null) {
+    throw new NotFoundError('Flashcard does not exist!')
+  }
+
+  // Check if the user owns this flashcard
+  const userTopic = await prisma.topic.findUnique({
+    where: {
+      topicId: foundFlashcard.topicId,
+      userId: userId
     }
-  
-    // Return the found flashcard 
-    return foundFlashcard;
-  };
+  })
+
+  if (userTopic === null) {
+    throw new UnAuthorizedError('User does not own this flashcard!')
+  }
+
+  // Return the found flashcard
+  return foundFlashcard
+}
 /**
  * @method POST
  * @param req
@@ -44,6 +50,8 @@ const createFlashcard = async (
   next: NextFunction
 ) => {
   try {
+    // read user from request params.
+    const { user } = req as Request & UserPayload
     // read the body
     const { question, answer, topicId } = req.body
     // validate the body
@@ -56,6 +64,18 @@ const createFlashcard = async (
     if (!validatedFlashcard.success) {
       throw new BadRequestError(
         validatedFlashcard.error.format() as unknown as string
+      )
+    }
+    // look for the Topic that the user owns
+    const foundTopic = await prisma.topic.findUnique({
+      where: {
+        topicId,
+        userId: user.userId
+      }
+    })
+    if (foundTopic === null) {
+      throw new NotFoundError(
+        'user does not own the topic or the topicId is not valid!'
       )
     }
     // generate the color code
@@ -99,14 +119,14 @@ const deleteFlashcard = async (
   next: NextFunction
 ) => {
   try {
-    const {user} = req as Request & UserPayload
+    const { user } = req as Request & UserPayload
     const { flashcardId } = req.params
     // might be a redundant check
     if (flashcardId === undefined || typeof flashcardId !== 'string') {
       throw new BadRequestError('flashcardId is missing')
     }
     // validate flashcard owner
-    await validateFlashcardOwner(flashcardId, user.userId);
+    await validateFlashcardOwner(flashcardId, user.userId)
     // delete the requested flashcard
     const deletedFlashcard = await prisma.flashcards.delete({
       where: {
@@ -139,15 +159,16 @@ const updateFlashcardRating = async (
 ) => {
   try {
     // get logged in user
-    const {user} = req as Request & UserPayload;
+    const { user } = req as Request & UserPayload
     // get flashcard id
     const { flashcardId } = req.params
     // read the body
     const { rating } = req.body
     // validate it
-    const validatedRating = ratingSchema.safeParse({
-      rating
-    })
+    const formattedRating = (rating as string).toUpperCase()
+    const validatedRating = ratingSchema.safeParse(
+      formattedRating
+    )
     // throw the error to the error handler
     if (!validatedRating.success) {
       throw new BadRequestError(
@@ -155,19 +176,19 @@ const updateFlashcardRating = async (
       )
     }
     // validate flashcard owner
-     await validateFlashcardOwner(flashcardId, user.userId);
+    await validateFlashcardOwner(flashcardId, user.userId)
     // update the rating
     const updatedFlashcard = await prisma.flashcards.update({
       where: {
         flashcard_id: flashcardId
       },
       data: {
-        rating,
+        rating: formattedRating as Rating,
         updatedAt: new Date()
       }
     })
     res.status(200).json({
-      flashcardRating: updatedFlashcard.rating,
+      rating: updatedFlashcard.rating,
       status: 'success'
     })
   } catch (err) {
@@ -188,11 +209,11 @@ const updateFlashcard = async (
 ) => {
   try {
     // get logged in user
-    const {user} = req as Request & UserPayload;
+    const { user } = req as Request & UserPayload
     // read req parameter
     const { flashcardId } = req.params
     // validate flashcard owner
-    await validateFlashcardOwner(flashcardId, user.userId);
+    await validateFlashcardOwner(flashcardId, user.userId)
     // find a unique flashcard
     const flashcard = await prisma.flashcards.findUnique({
       where: {
@@ -206,8 +227,9 @@ const updateFlashcard = async (
     if (flashcard === null) {
       throw new BadRequestError('flashcard not found!')
     }
-    const answer = req.body?.answer || flashcard.answer
-    const question = req.body?.question || flashcard.question
+    // to avoid a case whereby the client sends a boolean value
+    const answer =  isStringWithLength(req.body?.answer)  || flashcard.answer
+    const question =  isStringWithLength(req.body?.question) || flashcard.question
     let updatedAt
     // update updated_at based on if anything was changed
     if (answer !== flashcard.answer || question !== flashcard.question) {
