@@ -189,7 +189,7 @@ const getTopics = async (
     }
 
     // check if page query is a positive number
-    if (pageNumber < 0) {
+    if (pageNumber <= 0) {
       throw new BadRequestError('Page query must be a positive number')
     }
 

@@ -196,7 +196,7 @@ const updateFlashcardRating = async (
   }
 }
 /**
- * @method PUT
+ * @method PATCH
  * @param req
  * @param res
  * @param next

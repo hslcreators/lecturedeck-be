@@ -26,6 +26,8 @@ export const errorHandler = (
       message += 'Could not store data in the database'
     } else if (err instanceof PrismaClientInitializationError) {
       message += 'Could not access database'
+    } else {
+      message += err.message
     }
     return res.status(500).json({
       message,

@@ -39,7 +39,7 @@ const createUser = async (
       where: { OR: [{ email }, { username }] }
     })
     if (users > 0) {
-      throw new Error('The username or email already exists!')
+      throw new BadRequestError('The username or email already exists!')
     }
     // hash the password
     const salt = await bcrypt.genSalt(10)
@@ -88,7 +88,7 @@ const loginUser = async (
     }
     // compare the password with what is in the db.
     const isPassword = await bcrypt.compare(password, user.password)
-    if (!isPassword) throw new Error('password does not match')
+    if (!isPassword) throw new BadRequestError('password does not match')
     // create a token - which is just their id (keep it light.)
     const token = createToken({ userId: user.userId })
     // send user data and token back to the client.
