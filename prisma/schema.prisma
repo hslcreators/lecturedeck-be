@@ -6,55 +6,72 @@ generator client {
 }
 
 datasource db {
-  provider          = "mysql"
-  url               = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   //shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
-  relationMode      = "prisma"
+  relationMode = "prisma"
 }
 
 model User {
-  userId   String   @id @default(uuid())
-  username String   @unique
-  email    String   @unique
-  password String
-  joinedAt DateTime @default(now())
-  token    Token?
+  userId       String       @id @default(uuid())
+  username     String       @unique
+  email        String       @unique
+  password     String
+  joinedAt     DateTime     @default(now())
+  token        Token?
+  Topics       Topic[]
+  CopiedTopics CopyLogger[]
 }
 
 model Flashcards {
-  title        String
   flashcard_id String   @id @default(uuid())
   question     String
   answer       String
-  topic        Topic    @relation(fields: [topicId], references: [topicId])
-  topicId      String   @unique
-  status       Status
+  topic        Topic    @relation(fields: [topicId], references: [topicId], onDelete: Cascade)
+  topicId      String
   colorCode    String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   rating       Rating   @default(NEUTRAL)
+
+  @@index([topicId])
 }
 
 model Topic {
-  name        String
-  description String?
-  topicId     String      @id @default(uuid())
-  Flashcards  Flashcards?
+  name         String
+  description  String?
+  topicId      String       @id @default(uuid())
+  Flashcards   Flashcards[]
+  shareCode    String?
+  createdAt    DateTime     @default(now())
+  fileUrl      String?
+  user         User?        @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId       String?
+  userCopiedTo CopyLogger[]
+
+  @@index([userId])
 }
 
 model Token {
-  token_id  String  @id @default(uuid())
-  userId    String  @unique
-  user   User  @relation(fields: [userId], references: [userId])
-  token  String  @unique
-  expires_at DateTime 
+  token_id   String   @id @default(uuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  token      String   @unique
+  expires_at DateTime
 }
 
-enum Status {
-  FULLY_UNDERSTOOD
-  WORKING
-  NOT_SEEN
+model CopyLogger {
+  copyLoggerId String @id @default(uuid())
+  topic        Topic  @relation(fields: [topicId], references: [topicId], onDelete: Cascade)
+  topicId      String
+  user         User   @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId       String
+
+  @@index([topicId])
+  @@index([userId])
 }
+
+
 
 enum Rating {
   VERY_BAD

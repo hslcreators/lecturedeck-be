@@ -1,15 +1,15 @@
-import { type NextFunction } from 'express'
 import nodemailer from 'nodemailer'
+// Does not handle errors.
 const sendMail = async (
   email: string,
   subject: string,
-  text: string,
-  next: NextFunction
+  html: string,
 ): Promise<void> => {
-  try {
+    // For Gmail service to work enable 2fa and then create an app password, 
+   // this replaces the less secure apps option.
+   // https://www.reddit.com/r/node/comments/16rvh9g/how_do_i_send_emails_from_outlook_my_companycom/
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      secure: true,
       auth: {
         user: process.env.USER,
         pass: process.env.PASS
@@ -19,11 +19,10 @@ const sendMail = async (
       from: process.env.USER,
       to: email,
       subject,
-      text
+      html
     })
     console.log('email sent sucessfully')
-  } catch (err) {
-    next(err)
-  }
 }
+// sample call
+//sendMail('johndoe24@gmail.com', 'Password Reset', `<h1>Lecture Deck</h1> <div> <p> click the link below to reset your password</p> <a href="${process.env.BASE_URL}/password-reset/1234">reset password</a> </div>`);
 export { sendMail }

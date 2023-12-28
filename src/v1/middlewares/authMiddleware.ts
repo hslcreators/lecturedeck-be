@@ -1,9 +1,9 @@
 import Jwt, { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'
 import { UnAuthorizedError } from '../errors/httpErrors'
-import { type NextFunction } from 'express'
+import { type NextFunction, type Request, type Response } from 'express'
 import { prisma } from '../config/db'
 type AuthHeaders = Headers & {
-  'X-Auth-Token': string
+  'x-auth-token': string
 }
 const auth = async (
   req: Request,
@@ -11,7 +11,8 @@ const auth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const headers = (req.headers as AuthHeaders)['X-Auth-Token']
+    const headers = (req.headers as unknown as AuthHeaders)['x-auth-token']
+    //The token is received like this  "Bearer Token" where the Token is the actual JsonWebToken.
     const token = headers?.split(' ')[1]
     // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (!token) {
