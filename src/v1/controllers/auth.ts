@@ -107,7 +107,7 @@ const loginUser = async (
   }
 }
 /**
- * @method POST
+ * @method PATCH
  * @route /api/v1/auth/password-reset
  */
 const resetPassword = async (
@@ -133,29 +133,40 @@ const resetPassword = async (
         'a user with the given email address does not exist!'
       )
     }
-    let token = await prisma.token.findUnique({
-      where: { userId: user.userId }
-    })
-    if (token == null) {
+
       // set a 30 minutes expiration Time
-      const expirationTime = new Date()
-      expirationTime.setMinutes(expirationTime.getMinutes() + 30) 
-      token = await prisma.token.create({
-        data: {
+      const now = new Date()
+      const expirationTime = new Date(now.getTime() + (30 * 60 * 1000)) // add 30 minutes in milliseconds
+      const hash = genHash(32);
+      let createdToken = await prisma.token.upsert({
+        where : {
+          userId: user.userId
+        },
+        create: {
           userId: user.userId,
-          token: genHash(32),
+          token: hash,
+          expires_at: expirationTime
+        },
+        update: {
+          token: hash,
           expires_at: expirationTime
         }
       })
-    }
-    const link = `${process.env.BASE_URL}/password-reset/${user.userId}`
-    await sendMail(user.email, 'Password Reset Email', link, next)
-    res.status(201).json({message:"Successfully sent a reset email"})
+    
+    const html = `<h3>Lecture Deck</h3> <h1>Password Reset </h1> <div> <p>a password change was requested for your account, please click the button below to reset your password </p> <p>Note: <strong>the link expires in 30 minutes</strong></p> <a href="${process.env.BASE_URL}/password-reset/${user.userId}/${createdToken.token}" style="padding: 12px 10px;color:white;background-color:#3583e8;border-radius:6px;text-decoration: none;font-size: 17px;margin-top: 6px;display: block;max-width: fit-content;">Reset password</a> </div>`
+    await sendMail(user.email, 'Password Reset Email', html)
+    res.status(201).json({ message: 'Successfully sent a reset email', createdToken })
   } catch (err) {
     next(err)
   }
 }
-
+/**
+ * @method PATCH
+ * @route /api/v1/password-reset/:userId/:token
+ * @param req 
+ * @param res 
+ * @param next 
+ */
 const updatePassword = async (
   req: Request,
   res: Response,
