@@ -107,7 +107,7 @@ const loginUser = async (
   }
 }
 /**
- * @method POST
+ * @method PATCH
  * @route /api/v1/auth/password-reset
  */
 const resetPassword = async (
